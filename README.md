@@ -3,6 +3,10 @@
 Small helpers around Azure Table Storage and Blob Storage clients. The package
 wraps the Azure SDK to keep common operations short and consistent.
 
+```bash
+pip install kleiven-azure-storage
+```
+
 ## Requirements
 
 - Python 3.10+
@@ -10,24 +14,11 @@ wraps the Azure SDK to keep common operations short and consistent.
 - `azure-storage-blob`
 - `python-dotenv`
 
-## Installation
-
-Local install from this repo:
-
-```bash
-pip install .
-```
-
-Editable install while developing:
-
-```bash
-pip install -e .
-```
 
 ## Configuration
 
-The package loads environment variables via `python-dotenv`. Define your Azure
-connection string in `.env` or the shell:
+The package loads environment variables via `python-dotenv`.
+Define your Azure connection string in `.env` or the shell:
 
 ```env
 AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=...;
@@ -42,21 +33,44 @@ You can also pass a custom env var name to the helpers.
 ```python
 from kleiven.azure.storage import get_table_storage
 
-# Uses AZURE_STORAGE_CONNECTION_STRING by default
-table = get_table_storage("my-table")
+users = get_table_storage(table_name="users", env_variable_name = "AZURE_STORAGE_CONNECTION_STRING")
 
+# Get an entity
+entity = users.get_entity(
+        partition_key = 'users',
+        row_key = "123",
+        select = 'Name') # None if it partition_key, row_key does not exist in table
+
+if entity is not None:
+  print(entity.get("Name", None))
+
+
+
+# Upsert entity (replace by default)
 entity = {
     "PartitionKey": "users",
-    "RowKey": "u-123",
+    "RowKey": "123",
     "name": "Ada",
 }
 
 # Upsert entity (replace by default)
 table.upsert_entity(entity)
 
-# Fetch it back
-result = table.get_entity("users", "u-123")
-print(result)
+# Upsert entity: Merge
+from azure.data.tables import UpdateMode
+storage.upsert_entity(
+    entity=entity,
+    mode=UpdateMode.MERGE,
+    create_table_if_not_exist = True
+)
+
+# Create table if not already exist
+storage.upsert_entity(
+    entity=entity,
+    create_table_if_not_exist = True
+)
+
+
 ```
 
 ### Blobs
