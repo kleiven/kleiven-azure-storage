@@ -2,8 +2,8 @@ from .table_storage import TableStorage
 from .table_service import TableService
 from .blob_storage import BlobStorage
 from .blob_service import BlobService
+from .queue import Queue
 from .queue_service import QueueService
-from queue import Queue
 from azure.storage.queue import QueueProperties
 import os
 from dotenv import load_dotenv
